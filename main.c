@@ -4,6 +4,43 @@
 
 #include "vector.h"
 
+#define ADDRESS_SIZE sizeof(long long)
+typedef char byte;
+
+typedef union {
+    long long ll;
+    byte   bytes[8];
+} LongBytes;
+
+/*
+ Naive encoding of a 64-bit long to 8 bytes. 
+ */
+int
+EncodeLong(long long l, byte *bytes) {
+    LongBytes lb;
+    lb.ll = l;
+    memcpy(bytes, lb.bytes, 8);
+    return 8;
+}
+
+/*
+  Translates 8 bytes pointed to by 'bytes' to a 64-bit long.
+ */
+long long
+DecodeLong(byte *bytes) {
+    LongBytes lb;
+    memcpy(lb.bytes, bytes, 8);
+    return lb.ll;
+}
+
+char *collist, *collist_map;
+typedef struct MapList {
+    char *col_locations;
+    struct MapList *next;
+} MapList;
+
+struct MapList* head = NULL; 
+
 void vector_init(vector *v)
 {
     v->data = NULL;
@@ -118,7 +155,7 @@ const int count_cols(char* row)
     return num_cols;
 }
 
-const char* getfield(char* row, int col_num)
+const char* getfield(char* row, int col_num) //where col_num starts from 1
 {
     const char* tok;
     for (tok = strtok(row, ","); tok && *tok; tok = strtok(NULL, ",\n"))
@@ -129,32 +166,28 @@ const char* getfield(char* row, int col_num)
     return NULL;
 }
 
-char *collist, *collist_map;
-typedef struct MapList {
-    char *col_locations;
-    struct MapList *next;
-} MapList;
-
-
-
-void append(struct MapList** head_ref, int new_data) 
+void append(struct MapList** head_ref, long long new_data) 
 { 
     /* 1. allocate node */
     struct MapList* new_node = (struct MapList*) malloc(sizeof(struct MapList)); 
-  
     struct MapList *last = *head_ref;  /* used in step 5*/
   
     /* 2. put in the data  */
-    char new_data_string[20];
+    char new_data_string[ADDRESS_SIZE];
     //itoa(new_data, new_data_string, 10);
-    sprintf(new_data_string,"%d", new_data);
-    new_node->col_locations  = (char *)malloc(20 * sizeof(char));
-    int num_zeros = 20-strlen(new_data_string);
-    memset(new_node->col_locations, '0', num_zeros*sizeof(char)); 
-    strcpy(new_node->col_locations+num_zeros,new_data_string);
-    printf("SIZEOF %d lenght %d",sizeof(new_node->col_locations),strlen(new_node->col_locations));
-    /* 3. This new node is going to be the last node, so make next of 
-          it as NULL*/
+
+    EncodeLong(new_data, new_data_string);
+    new_node->col_locations  = (char *)malloc(ADDRESS_SIZE * sizeof(char));
+    strcpy(new_node->col_locations, new_data_string);
+
+    // sprintf(new_data_string,"%ld", new_data);
+    // new_node->col_locations  = (char *)malloc(ADDRESS_SIZE * sizeof(char));
+    // int num_zeros = 20-strlen(new_data_string);
+    // memset(new_node->col_locations, '0', num_zeros*sizeof(char)); 
+    // strcpy(new_node->col_locations+num_zeros,new_data_string);
+
+    // printf("SIZEOF %d lenght %d",sizeof(new_node->col_locations),strlen(new_node->col_locations));
+
     new_node->next = NULL; 
   
     /* 4. If the Linked List is empty, then make the new node as head */
@@ -192,38 +225,47 @@ int main()
     char *row = NULL;
     size_t len = 0;
     ssize_t read;
-    int num_rows = 0, num_cols = 0,cumulative_length = 0, prev_len = 0;
+    int num_cols = 0;
+    long num_rows = 0;
+    long long cumulative_length = 0, prev_len = 0;
     //int *row_loc;
     //row_loc[0] = 0;
-    //printf("HRLOO\n");
+    // printf("HRLOO\n");
     vector row_locations;
     vector_init(&row_locations);
     if (fp == NULL)
         exit(EXIT_FAILURE);
-
-    struct MapList* head = NULL; 
 
     while ((read = getline(&row, &len, fp)) != -1)
     {
         if(num_rows == 0)
         {
             collist = (char *)malloc(read * sizeof(char));
-            printf("Numbercols %d, read: %d row %s",num_cols, read, row);
             strcpy(collist,row);
             num_cols = count_cols(row);
+            printf("Numbercols %d, read: %ld row %s",num_cols, read, row);
+            
+            char *tmp = strdup(row);
+            char *colToIndex = getfield(tmp,1);
+            
+            collist_map = (char *)malloc(strlen(colToIndex) * sizeof(char));
+            strcpy(collist_map,colToIndex);
+
+            free(tmp);
+            tmp = strdup(row);
+            free(colToIndex);
+            colToIndex = getfield(tmp,4);
+
+            collist_map = (int *)realloc(collist_map, (strlen(collist_map)+strlen(colToIndex)) * sizeof(char));
+            strcpy(collist_map,colToIndex); 
 
         }
-        char* tmp = strdup(row);
-        //printf("Field 3 would be %s ", getfield(tmp, 3));
-        // NOTE strtok clobbers tmp
-        free(tmp);
-        //printf("Row number: %d, File pointer: %ld ",num_rows,*fp);
-        num_rows++;
+        num_rows++; char *firstcol = getfield(tmp,1);
         //row_loc[num_rows] = len + row_loc[num_rows-1];
         cumulative_length = prev_len + cumulative_length;
         //printf("prev_len %d Row loc: %d \n",prev_len,cumulative_length);
         vector_add(&row_locations, cumulative_length);
-        append(&head,cumulative_length);
+        append(&head, cumulative_length);
         prev_len = read;
 
         //len = 0;
@@ -234,15 +276,14 @@ int main()
     printf("Row: %s \n",row);
     printf("Row locations: \n");
     int i = 0;
-    /*for (i = 0; i < vector_count(&row_locations); i++) {
-       // printf("%d ", vector_get(&row_locations, i));
-    }*/
-    /*int i = 0;
-    for(i=0 ; i<num_rows; i++)
-        printf("%d ",row_loc[i]);
-    */
-    printf("\nLength: %d ",strlen("326835,0,92354,18,626,86.3866666666667,55,102.019618156945,0,431,37.8986666666667,9,118,11,41,102,-30,53,67,20,0,24,saturday,tuesday,1"));
-    printf("Collist %s\n",collist);
-    printList(head);
+    printf("collist_map %s\n",collist_map);
+    // printList(head);
+    struct MapList* node = head; 
+    while (i < 10) 
+  { 
+     printf(" %ld ", DecodeLong(node->col_locations)); 
+     node = node->next; 
+     i++;
+  } 
     fclose(fp);
 }

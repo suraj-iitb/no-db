@@ -33,8 +33,8 @@ void getData(char buff[])
  
    while( token != NULL ) 
    {
- 		counter++; 
-		printf( " %s\n",token);
+ 	counter++; 
+	printf( " %s\n",token);
       	token = strtok(NULL,",");
    }	  
 }
