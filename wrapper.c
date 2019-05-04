@@ -50,6 +50,7 @@ int main() {
       exit(EXIT_SUCCESS);
     } else {
       printf("implement for retrieval of '%s'.\n", input_buffer->buffer);
+      \\ call xyz method to retieve rows
     }
   }
 }
