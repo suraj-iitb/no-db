@@ -1,14 +1,5 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-struct InputBuffer_t {
-  char* buffer;
-  size_t buffer_length;
-  ssize_t input_length;
-};
-typedef struct InputBuffer_t InputBuffer;
+#include "wrapper.h"
+#include "table.h"
 
 InputBuffer* create_input_buffer() {
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
@@ -21,14 +12,13 @@ InputBuffer* create_input_buffer() {
 
 void read_input(InputBuffer* input_buffer) {
   ssize_t bytes_read = getline(&(input_buffer->buffer), &(input_buffer->buffer_length), stdin);
-
   if (bytes_read <= 0) {
     printf("Please provide command to execute!\n");
     exit(EXIT_FAILURE);
   }
 
   // Ignore trailing newline which terminates getline
-  input_buffer->input_length = bytes_read - 1; 
+  input_buffer->input_length = bytes_read - 1;
   //index from "0" to  "(input_buffer->input_length - 1)"
   //put NULL character to terminate the input string which is at index "input_buffer->input_length"
   input_buffer->buffer[input_buffer->input_length] = '\0';
@@ -39,7 +29,7 @@ void close_input_buffer(InputBuffer* input_buffer) {
     free(input_buffer);
 }
 
-int main() {
+void cli_for_db() {
   InputBuffer* input_buffer = create_input_buffer();
   while (true) {
     printf("No-Db > ");
@@ -48,9 +38,21 @@ int main() {
     if (strcmp(input_buffer->buffer, ".exit") == 0) {
       close_input_buffer(input_buffer);
       exit(EXIT_SUCCESS);
-    } else {
+    } else if (strncmp(input_buffer->buffer, "create table", 12) == 0) {
+        char *token;
+        char *file;
+        /* get the first token */
+        token = strtok(input_buffer->buffer, " ");
+        /* walk through other tokens */
+        while( token != NULL ) {
+          file = strdup(token);
+          token = strtok(NULL, " ");
+        }
+        create_table(file);
+    }
+    else {
       printf("implement for retrieval of '%s'.\n", input_buffer->buffer);
-      //call xyz method to retieve rows
+      
     }
   }
 }

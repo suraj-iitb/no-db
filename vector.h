@@ -1,3 +1,5 @@
+#include<stdlib.h>
+
 #ifndef VECTOR_H__
 #define VECTOR_H__
 
