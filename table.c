@@ -2,6 +2,7 @@
 #include "encodings.h"
 #include "col_row_op.h"
 #include "linear_index.h"
+#include "table.h"
 
 void create_table(const char * file)
 {
@@ -18,7 +19,7 @@ void create_table(const char * file)
         exit(EXIT_FAILURE);
     
     //reading columns i.e header of csv file
-    char *collist = strdup(row); 
+    collist = strdup(row); 
     int num_cols = count_cols(row);    
     
     printf("\nColumns:\n%s\n", collist);

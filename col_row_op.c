@@ -16,11 +16,28 @@ const int count_cols(char* row)
 /*find col name corresponding to col no 'col_num'*/
 const char* getfield(char* row, int col_num) // where col_num starts from 1
 {
-    const char* tok;
+    
     for (tok = strtok(row, ","); tok && *tok; tok = strtok(NULL, ",\n"))
     {
-        if (!--col_num)
+        if (!--col_num){
+            printf("%s\n", tok);
             return tok;
+        }
     }
     return NULL;
 }
+
+long long getlength(char *row, int col_num)
+{
+    int len = 0;
+    const char* tok;
+    for (tok = strtok(row, ","); tok && *tok; tok = strtok(NULL, ",\n"))
+    {
+        len += strlen(tok)+1; 
+        if (!--col_num)
+            return len;
+    }
+    return len;
+
+}
+

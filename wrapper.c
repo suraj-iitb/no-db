@@ -1,5 +1,6 @@
 #include "wrapper.h"
 #include "table.h"
+#include "linear_index.h"
 
 InputBuffer* create_input_buffer() {
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
@@ -30,6 +31,7 @@ void close_input_buffer(InputBuffer* input_buffer) {
 }
 
 void cli_for_db() {
+  char *file;
   InputBuffer* input_buffer = create_input_buffer();
   while (true) {
     printf("No-Db > ");
@@ -40,7 +42,6 @@ void cli_for_db() {
       exit(EXIT_SUCCESS);
     } else if (strncmp(input_buffer->buffer, "create table", 12) == 0) {
         char *token;
-        char *file;
         /* get the first token */
         token = strtok(input_buffer->buffer, " ");
         /* walk through other tokens */
@@ -50,8 +51,10 @@ void cli_for_db() {
         }
         create_table(file);
     }
-    else {
-      printf("implement for retrieval of '%s'.\n", input_buffer->buffer);
+    else if (strncmp(input_buffer->buffer, "select", 6) == 0)  {
+      // printf("implement for retrieval of '%s'.\n", input_buffer->buffer);
+      create_initial_index(file);
+      create_index(2, file); // 2 is column no.
       
     }
   }
