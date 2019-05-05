@@ -46,8 +46,8 @@ void vector_add(vector *v, void *e)
 {
     if (v->size == 0) {
         v->size = 10;
-        v->data = malloc(sizeof(void*) * v->size);
-        memset(v->data, '\0', sizeof(void) * v->size);
+        v->data = calloc(sizeof(void*), v->size);
+        // memset(v->data, '\0', sizeof(void) * v->size);
     }
     // condition to increase v->data:
     // last slot exhausted
@@ -145,10 +145,10 @@ void append(struct MapList** head_ref, long long new_data)
     struct MapList *last = *head_ref;  /* used in step 5*/
   
     /* 2. put in the data  */
-    char new_data_string[ADDRESS_SIZE];
+    char new_data_string[ADDRESS_SIZE+1];
     EncodeLong(new_data, new_data_string);
-    new_node->col_locations  = (char *)malloc(ADDRESS_SIZE * sizeof(char));
-    bzero(new_node->col_locations,ADDRESS_SIZE);
+    new_node->col_locations  = (char *)calloc(ADDRESS_SIZE+1, sizeof(char));
+    // bzero(new_node->col_locations,ADDRESS_SIZE);
     printf("New data string %ld encoding",DecodeLong(new_data_string));
     //strcpy(new_node->col_locations, NULL);
 
@@ -183,6 +183,8 @@ void printList(struct MapList *node, long long len)
 } 
 int main()
 {
+    int index_present = 0; 
+    int num_map_cols = 0;
     struct MapList *head = NULL;
     FILE* fp;
     fp = fopen("trainsmall.csv", "r");
@@ -202,7 +204,7 @@ int main()
     // vector_init(&row_locations);   
 
     int get_colno = 2;
-    int index_present = 0; 
+    
 
     while ((read = getline(&row, &len, fp)) != -1)
     {
@@ -216,7 +218,7 @@ int main()
         if(num_rows == 0)
         {
             //reading columns i.e header of csv file
-            // collist = (char *)malloc(read * sizeof(char));
+            // collist = (char *)calloc(read * sizeof(char));
             char *tmp;
             
             collist = strdup(row); 
@@ -227,10 +229,9 @@ int main()
             tmp = strdup(collist);
             strcpy(row, collist);
             col_from_index = getfield(tmp, index_no);
-            
-            
 
             printf("col %s at index %d\n", collist, get_colno);
+            num_map_cols++;
 
         }
         num_rows++;
@@ -253,6 +254,7 @@ int main()
     col_from_index = (char *) realloc(col_from_index,strlen(col_from_index)+strlen(column_name)+1);
     strcat(col_from_index,",");
     strcat(col_from_index,column_name);
+    
     //Scanning file from beginning
     while ((read = getline(&row, &len, fp)) != -1)
     {
@@ -270,17 +272,21 @@ int main()
         char *tmp = strdup(row);
         struct MapList *last; 
         if(num_rows ==0)
+        {
             last = head;
+            num_map_cols++;
+        }
         printf("Before: %s %ld %d ",last->col_locations,DecodeLong(last->col_locations),strlen(last->col_locations));
         //Realloc col_locations to store column address of new column
-        last->col_locations  = (char *)realloc(last->col_locations,2 * ADDRESS_SIZE * sizeof(char));
+        
+        last->col_locations  = (char *)realloc(last->col_locations, (num_map_cols) * ADDRESS_SIZE * sizeof(char) + 1);
         char new_data_string[ADDRESS_SIZE];
-        //bzero(last->col_locations+8,ADDRESS_SIZE);
+        bzero(last->col_locations+8,ADDRESS_SIZE);
         long newlen = cumulative_length+getlength(tmp,get_colno);
         printf("NEW LENGTH %ld ",newlen);
         int byteEncoded = EncodeLong(newlen, new_data_string);
         strcpy(last->col_locations+8,new_data_string);
-        printf("After: %ld  %ld ",DecodeLong(last->col_locations),DecodeLong(last->col_locations+ADDRESS_SIZE));
+        printf("After: %ld  %ld \n",DecodeLong(last->col_locations),DecodeLong(last->col_locations+ADDRESS_SIZE));
 
         last = last->next;
         //append(&head, cumulative_length + getlength(tmp, get_colno));
@@ -290,7 +296,7 @@ int main()
         num_rows++;
  
     }
-
+    printf("num_map_cols = %d\n", num_map_cols);
 
     printf("\nColumns:\n%s\n", collist);
     printf("Number of columns: %d\n\n",num_cols);
