@@ -230,7 +230,7 @@ int main()
             strcpy(row, collist);
             col_from_index = getfield(tmp, index_no);
 
-            printf("col %s at index %d\n", collist, get_colno);
+            printf("col %s at index %d\n", col_from_index, get_colno);
             num_map_cols++;
 
         }
