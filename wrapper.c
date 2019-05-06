@@ -2,6 +2,10 @@
 #include "table.h"
 #include "linear_index.h"
 #include "vector.h"
+#include "basic.h"
+// #include <time.h>
+#include <unistd.h>
+#include <sys/time.h>
 
 InputBuffer* create_input_buffer() {
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
@@ -31,11 +35,21 @@ void close_input_buffer(InputBuffer* input_buffer) {
     free(input_buffer);
 }
 
+double get_time_spent(struct timeval start, struct timeval end)
+{
+  double start_t, end_t, time_spent;
+    start_t = start.tv_usec + (unsigned long long)start.tv_sec * 1000000;
+    end_t = end.tv_usec + (unsigned long long)end.tv_sec * 1000000;
+    time_spent = (double)(end_t - start_t)/1000000;
+    return time_spent;
+}
+
 void cli_for_db() {
   char *file;
   char *token;
   InputBuffer* input_buffer = create_input_buffer();
   vector query_col_indices;
+  
   while (true) {
     printf("No-Db > ");
     read_input(input_buffer);
@@ -63,17 +77,12 @@ void cli_for_db() {
       select * from where
       select col1, col2... from where
       */
+      struct timeval start, end;
       
       vector_init(&query_col_indices);
       char someCase = '1';
       //case 1
-      token = strtok(input_buffer->buffer, " ");   
-      /* walk through other tokens */
-      // int colsToFetch_bitmap[(num_cols+1)/32 + 1];
-      // for(int i = 0; i < (num_cols+1)/32 + 1; i++)
-      // {
-      //   colsToFetch_bitmap[i] = 0;
-      // }
+      token = strtok(input_buffer->buffer, " ");
       while(strcasecmp(token, "from" ) != 0)
       {
         // printf("--%s--\n", token);
@@ -82,7 +91,9 @@ void cli_for_db() {
           someCase = '0';
           file = strtok(NULL, ", \n"); //from
           file = strtok(NULL, ", \n"); //filename
+          gettimeofday(&start, NULL);
           fetchAll(file);
+          gettimeofday(&end, NULL);
           break;
         }
         // printf("Location of %s %d\n", token, vector_getloc(&allColNames_list, token));
@@ -101,9 +112,21 @@ void cli_for_db() {
       if(someCase == '1')
       {
         file = strtok(NULL, ", \n");
-
+        gettimeofday(&start, NULL);
         fetchSome(file, &query_col_indices);
+        gettimeofday(&end, NULL);
       }
+      
+      double itime = get_time_spent(start, end);                                                           
+      gettimeofday(&start, NULL);
+      fetchWithoutIndex(file, &query_col_indices);
+      gettimeofday(&end, NULL);
+
+      double btime = get_time_spent(start, end);
+
+      printf("time_spent on index supported query = %lf ms\n", itime);                                                                                                                                      
+      printf("time_spent on basic query = %lf ms\n", btime);
+
     }
   }
 }

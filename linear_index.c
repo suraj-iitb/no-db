@@ -1,8 +1,6 @@
 #include "linear_index.h"
 #include "table.h"
 #include "col_row_op.h"
-
-#include <stdarg.h>
 #include "vector.h"
 
 long long num_map_cols = 0;
@@ -69,7 +67,7 @@ void printResults(char *file, vector *query_col_indices)
 	last = head;
 	printf("In printResults\n");
 
-	for(j = 0; j < 10; j++, last = last->next)
+	for(j = 0; j < 101; j++, last = last->next)
 	{
 		for (i = 0; i < vector_count(query_col_indices); i++)
 		{
@@ -302,12 +300,6 @@ void aupdate_index(char *file, vector *query_col_indices)
 	// printf("Hello2\n");
 	if(qni > 0)
 	{
-		// min_bro = brother_cols[0];
-		// for(int i = 0; i < qni; i++)
-		// {
-		// 	if(brother_cols[i] < min_bro)
-		// 		min_bro = brother_cols[i];
-		// }
 		int te=0;
 		printf("min_bro = %d\n",min_bro);
 		while (last != NULL)
@@ -331,10 +323,6 @@ void aupdate_index(char *file, vector *query_col_indices)
 				}
 				tmp = strdup(row2);
 				get_colno = cols_to_construct[i]; 
-			// printf("get_colno: %d\n", get_colno);
-			// printf("brother_cols[i]]: %d\n", brother_cols[i]);
-			// printf("col_from_index_posmap[brother_cols[i]]: %ld\n", col_from_index_posmap[brother_cols[i]]);
-				
 				char new_data_string[ADDRESS_SIZE];
 				bzero(last->col_locations+(prev_num_map_cols+i)*ADDRESS_SIZE, ADDRESS_SIZE);
 
@@ -342,18 +330,14 @@ void aupdate_index(char *file, vector *query_col_indices)
 				{
 					// printf("After: %ld \n",DecodeLong(last->col_locations+(col_from_index_posmap[brother_cols[get_colno]])));
 				}
-
-			// printf("%s\n", tmp);
-			// printf("get_colno-brother_cols[i]: %ld\n", get_colno-brother_cols[i]);
-
 				newlen = DecodeLong(last->col_locations+(col_from_index_posmap[min_bro]*ADDRESS_SIZE))
 				+ getlength(tmp, get_colno - min_bro);
 			// printf("newlen: %ld\n", newlen);
 				int bytesEncoded = EncodeLong(newlen, new_data_string);
 				strcpy(last->col_locations+(prev_num_map_cols+i)*ADDRESS_SIZE, new_data_string);
 			// free(tmp);
-				if (te<10)
-				printf("te is %ld\n", DecodeLong(last->col_locations+(prev_num_map_cols+i)*ADDRESS_SIZE));
+				// if (te<10)
+				// printf("te is %ld\n", DecodeLong(last->col_locations+(prev_num_map_cols+i)*ADDRESS_SIZE));
 				te++;
 			// printf("Hello4\n");	
 			}
@@ -369,101 +353,3 @@ void aupdate_index(char *file, vector *query_col_indices)
     printList(head, 10, num_map_cols); // we want start address of first 10 rows
   // printf("Done!\n");
 }
-
-// void create_index(int get_colno, char *file){
-
-// 	FILE *fp = fopen(file, "r");
-// 	printf("In create_index\n");
-// 	fseek(fp, 0, SEEK_SET);
-// 	long long num_rows = 0;
-// 	long long cumulative_length = 0, prev_len = 0;
-// 	ssize_t read;
-// 	char *tmp;
-// 	struct MapList *last; 
-
-// 	char *row = NULL;
-// 	size_t len;
-
-// 	if(allColNames_str != NULL){
-
-// 		tmp = strdup(allColNames_str);
-
-// 		char *column_name = getfield(tmp, get_colno);
-// 		printf("%s\n", column_name);
-
-//     //Realloc to update col_from_index which contains column names for all indices
-// 		col_from_index = (char *) realloc(col_from_index, strlen(col_from_index)+strlen(column_name)+1);
-
-// 		if (num_rows != 0)
-// 			strcat(col_from_index,",");
-// 		strcat(col_from_index,column_name);
-
-//     //Scanning file from beginning
-// 		while ((read = getline(&row, &len, fp)) != -1)
-// 		{
-// 			cumulative_length = prev_len + cumulative_length;
-// 			char *tmp = strdup(row);
-
-// 			if(num_rows == 0)
-// 			{
-// 				last = head;
-//             // printf("num_map_cols: %d\n", num_map_cols);
-// 				col_from_index_posmap[get_colno] = num_map_cols;
-// 				num_map_cols++;
-//             // SetBit(col_from_index_bitmap, get_colno);
-
-// 			}
-// 			last->col_locations = (char *)realloc(last->col_locations, (num_map_cols) * ADDRESS_SIZE * sizeof(char) + 1);
-// 			char new_data_string[ADDRESS_SIZE];
-// 			bzero(last->col_locations+(num_map_cols-1)*ADDRESS_SIZE,ADDRESS_SIZE);
-// 			long newlen = cumulative_length+getlength(tmp,get_colno-1);
-//         // printf("NEW LENGTH %ld ",newlen);
-// 			int byteEncoded = EncodeLong(newlen, new_data_string);
-// 			strcpy(last->col_locations+(num_map_cols-1)*ADDRESS_SIZE,new_data_string);
-//         // printf("After: %ld  %ld \n",DecodeLong(last->col_locations),DecodeLong(last->col_locations+ADDRESS_SIZE));
-// 			last = last->next;
-//         //append(&head, cumulative_length + getlength(tmp, get_colno));
-// 			prev_len = read;    
-// 			num_rows++;
-
-// 		}
-// 	}
-// 	printf("Numcols: %d; Row locations based on index build so far:\n",num_map_cols);
-// 	printList(head, 10, num_map_cols); 
-// 	fclose(fp);
-//   // printf("Done!\n");
-// }
-
-// void printResults_deprecated(char *file, int num_cols_to_print, ...)
-// {
-//    FILE *fp = fopen(file, "r");
-//    va_list valist;
-//    int i, j;
-//    /* initialize valist for num number of arguments */
-//    /* access all the arguments assigned to valist */
-//    char *row = NULL;
-//     size_t len = 0;
-//     ssize_t read;
-//     struct MapList *last; 
-//    va_start(valist, num_cols_to_print);
-//    last = head;
-//    printf("In printResults\n");
-
-//    for(j = 0; j < 10; j++, last = last->next)
-//    {
-//    		for (i = 0; i < num_cols_to_print; i++)
-//    		{
-//    			// col_from_index_posmap[get_colno] = num_map_cols;
-//    			// printf("i: %d, pos: %d\n", i, col_from_index_posmap[i]);
-// 	   		// fseek(fp, DecodeLong(last->col_locations+(col_from_index_posmap[i]*ADDRESS_SIZE)), SEEK_SET);
-// 	   		// read = getline(&row, &len, fp);
-// 	    	// printf("%s \t", getfield(row, 1));
-//       		// sum += va_arg(valist, int);
-
-//    		}
-//    		printf("\n");
-//    }
-//    /* clean memory reserved for valist */
-//    va_end(valist);
-//    fclose(fp);  
-// }
