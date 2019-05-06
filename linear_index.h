@@ -17,5 +17,5 @@ int *col_from_index_posmap;
 #define ADDRESS_SIZE sizeof(long long)
 
 void printList(struct MapList *node, long long len, int num_cols);
-void append(struct MapList** head_ref, long long new_data);
+struct MapList *append(struct MapList** head_ref, long long new_data);
 #endif
