@@ -54,6 +54,17 @@ void *vector_get(vector *v, int index)
     return v->data[index];
 }
 
+int vector_getloc(vector *v, void *e)
+{
+    for(int i = 0; i < v->count; i++)
+    {
+        if(strcmp((char *)e, v->data[i]) == 0)
+            return i;
+    }
+
+    return -1;
+}
+
 /*delete a row from vector*/
 void vector_delete(vector *v, int index)
 {

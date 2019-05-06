@@ -4,10 +4,17 @@ Steps to run:
 2. Run:     ./nodb 
 
 	No-Db > create table train.csv
+		select * from train.csv
+		select page_likes from train.csv
+		select page_likes, daily_crowd from train.csv
 
 		Columns:
 		page_likes,page_checkin,daily_crowd,page_category,F1,F2,F3,F4,F5,F6,F7,F8,c1,c2,c3,c4,c5,base_time,post_length,share_count,promotion,h_target,post_day,basetime_day,target
 
 		Number of columns: 25
 
+		
+		select page_checkin from train.csv
+		
 	No-Db > .exit
+

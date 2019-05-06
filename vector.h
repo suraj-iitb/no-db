@@ -1,5 +1,7 @@
 #include<stdlib.h>
-
+//  #define SetBit(A,k)     ( A[(k/32)] |= (1 << (k%32)) )
+// #define ClearBit(A,k)   ( A[(k/32)] &= ~(1 << (k%32)) )  
+// #define TestBit(A,k)    ( A[(k/32)] & (1 << (k%32)) ) 
 #ifndef VECTOR_H__
 #define VECTOR_H__
 

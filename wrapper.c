@@ -1,6 +1,7 @@
 #include "wrapper.h"
 #include "table.h"
 #include "linear_index.h"
+#include "vector.h"
 
 InputBuffer* create_input_buffer() {
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
@@ -32,30 +33,77 @@ void close_input_buffer(InputBuffer* input_buffer) {
 
 void cli_for_db() {
   char *file;
+  char *token;
   InputBuffer* input_buffer = create_input_buffer();
+  vector query_col_indices;
   while (true) {
     printf("No-Db > ");
     read_input(input_buffer);
 
-    if (strcmp(input_buffer->buffer, ".exit") == 0) {
+    if (strcasecmp(input_buffer->buffer, ".exit") == 0) {
       close_input_buffer(input_buffer);
       exit(EXIT_SUCCESS);
-    } else if (strncmp(input_buffer->buffer, "create table", 12) == 0) {
-        char *token;
+    } else if (strncasecmp(input_buffer->buffer, "create table", 12) == 0) {
+        
         /* get the first token */
         token = strtok(input_buffer->buffer, " ");
         /* walk through other tokens */
-        while( token != NULL ) {
-          file = strdup(token);
-          token = strtok(NULL, " ");
+        while( token != NULL )
+        {
+            file = strdup(token);
+            token = strtok(NULL, " ");
         }
         create_table(file);
     }
-    else if (strncmp(input_buffer->buffer, "select", 6) == 0)  {
+    else if (strncasecmp(input_buffer->buffer, "select", 6) == 0)  {
       // printf("implement for retrieval of '%s'.\n", input_buffer->buffer);
-      create_initial_index(file);
-      create_index(2, file); // 2 is column no.
+      /*
+      select * from
+      select col1, col2.. from
+      select * from where
+      select col1, col2... from where
+      */
       
+      vector_init(&query_col_indices);
+      char someCase = '1';
+      //case 1
+      token = strtok(input_buffer->buffer, " ");   
+      /* walk through other tokens */
+      // int colsToFetch_bitmap[(num_cols+1)/32 + 1];
+      // for(int i = 0; i < (num_cols+1)/32 + 1; i++)
+      // {
+      //   colsToFetch_bitmap[i] = 0;
+      // }
+      while(strcasecmp(token, "from" ) != 0)
+      {
+        // printf("--%s--\n", token);
+        if(strcmp(token, "*") == 0)
+        {
+          someCase = '0';
+          file = strtok(NULL, ", \n"); //from
+          file = strtok(NULL, ", \n"); //filename
+          fetchAll(file);
+          break;
+        }
+        // printf("Location of %s %d\n", token, vector_getloc(&allColNames_list, token));
+        token = strtok(NULL, ", \n");
+        // colsToFetch_bitmap[vector_getloc(&allColNames_list, token)] = 1;
+        //it's reverse, in each int
+        int k = vector_getloc(&allColNames_list, token);
+        // printf("Location of %d\n", k);
+        if(k > 0)
+        {
+          vector_add(&query_col_indices, k);
+          // SetBit(colsToFetch_bitmap, k);
+        }
+        // printf("colsToFetch_bitmap[0]: %d\n", colsToFetch_bitmap[0]);
+      }
+      if(someCase == '1')
+      {
+        file = strtok(NULL, ", \n");
+
+        fetchSome(file, &query_col_indices);
+      }
     }
   }
 }

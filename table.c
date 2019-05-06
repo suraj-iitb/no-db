@@ -13,18 +13,19 @@ void create_table(const char * file)
 
     char *row = NULL;
     size_t len = 0;
-    
+    vector_init(&allColNames_list);
     ssize_t read = getline(&row, &len, fp);
     if(read <= 0)
         exit(EXIT_FAILURE);
-    
     //reading columns i.e header of csv file
-    collist = strdup(row); 
-    int num_cols = count_cols(row);    
-    
-    printf("\nColumns:\n%s\n", collist);
-    printf("Number of columns: %d\n\n",num_cols);
-    
+    allColNames_str = strdup(row); 
+    num_cols = count_cols(row);    
+    col_from_index_bitmap = (int *)calloc(sizeof(int), (num_cols+1)/32 + 1);
+    col_from_index_posmap = (int *)calloc(sizeof(int), num_cols+1);
+    for(int i = 0; i < num_cols+1; i++)
+        col_from_index_posmap[i] = -1;
+    printf("\nColumns:\n%s\n", allColNames_str);
+    printf("Number of columns: %d\n\n",num_cols); 
     fclose(fp);
 }
 
@@ -43,7 +44,7 @@ void create_table(const char * file)
 //     int num_cols = 0;
 //     long num_rows = 0;
 //     long long cumulative_length = 0, prev_len = 0;
-//     char *collist;
+//     char *allColNames_str;
 //     char *col_from_index;
 
 //     // vector row_locations; // is a array of strings and each string holds addresses of different fields for a row
@@ -55,13 +56,13 @@ void create_table(const char * file)
 //         if(num_rows == 0)
 //         {
 //             //reading columns i.e header of csv file
-//             collist = strdup(row); 
+//             allColNames_str = strdup(row); 
 //             num_cols = count_cols(row);
-//             // printf("Number cols: %d\nCharacters read: %ld\nCol list: %s\n",num_cols, read, collist);
+//             // printf("Number cols: %d\nCharacters read: %ld\nCol list: %s\n",num_cols, read, allColNames_str);
             
 //             //find col name for index no in csv header. Note index no starts from 1
-//             char *tmp = strdup(collist);
-//             strcpy(row, collist);
+//             char *tmp = strdup(allColNames_str);
+//             strcpy(row, allColNames_str);
 //             col_from_index = getfield(tmp, 1);
 //             // printf("col %s at index %d\n", col_from_index, index_no);
 
@@ -75,7 +76,7 @@ void create_table(const char * file)
 //         prev_len = read;     
 //     }
 
-//     printf("\nColumns:\n%s\n", collist);
+//     printf("\nColumns:\n%s\n", allColNames_str);
 //     printf("Number of columns: %d\n\n",num_cols);
 //     printf("Index list built so far on following columns: %s\n\n",col_from_index);
     
