@@ -67,7 +67,7 @@ void printResults(char *file, vector *query_col_indices)
 	last = head;
 	printf("In printResults\n");
 
-	for(j = 0; j < 101; j++, last = last->next)
+	for(j = 0; j < 11; j++, last = last->next)
 	{
 		for (i = 0; i < vector_count(query_col_indices); i++)
 		{

@@ -22,13 +22,15 @@ void fetchWithoutIndex(char * file, vector *query_col_indices)
 			get_colno = query_col_indices->data[i];
 			char *temp =  strdup(row);
 			value = getfield(temp, get_colno);
-			printf("%s\t", value);
+			if(num_rows < 10)
+				printf("%s\t", value);
 
-		}   
+		}  
+		if(num_rows < 10) 
 		printf("\n");  
 		num_rows++;
-		if(num_rows > 100)
-			break;
+		// if(num_rows > 100)
+		// 	break;
 	}
     
     fclose(fp);

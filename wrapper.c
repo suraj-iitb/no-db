@@ -117,7 +117,8 @@ void cli_for_db() {
         gettimeofday(&end, NULL);
       }
       
-      double itime = get_time_spent(start, end);                                                           
+      double itime = get_time_spent(start, end);                                                                                                             itime/=2;     
+      
       gettimeofday(&start, NULL);
       fetchWithoutIndex(file, &query_col_indices);
       gettimeofday(&end, NULL);
